@@ -1,6 +1,6 @@
 {
   "name": "rx-event-manager",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Rx Event Manager",
   "main": "lib/EventManager.js",
   "scripts": {
@@ -9,8 +9,7 @@
   "keywords": [
     "rx",
     "event",
-    "event",
-    "manager",
+    "reactive",
     "observable"
   ],
   "author": "huang47",
