@@ -1,3 +1,5 @@
+# [![Build Status](https://secure.travis-ci.org/huang47/rx-event-manager.png?branch=master)](http://travis-ci.org/huang47/rx-event-manager)
+
 # Rx Event Manager
 
 ## motivation
