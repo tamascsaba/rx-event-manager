@@ -1,6 +1,6 @@
 {
   "name": "rx-event-manager",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Rx Event Manager",
   "main": "lib/EventManager.js",
   "scripts": {
@@ -19,5 +19,16 @@
   },
   "dependencies": {
     "rx": "^2.2.27"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/huang47/rx-event-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/huang47/rx-event-manager/issues"
+  },
+  "homepage": "https://github.com/huang47/rx-event-manager"
 }
