@@ -4,6 +4,7 @@
   "description": "Rx Event Manager",
   "main": "lib/EventManager.js",
   "scripts": {
+    "pretest": "npm i",
     "test": "./node_modules/mocha/bin/mocha -R spec"
   },
   "keywords": [
