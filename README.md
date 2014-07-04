@@ -1,4 +1,5 @@
-# [![Build Status](https://secure.travis-ci.org/huang47/rx-event-manager.png?branch=master)](http://travis-ci.org/huang47/rx-event-manager)
+[![Build Status](https://secure.travis-ci.org/huang47/rx-event-manager.png?branch=master)](http://travis-ci.org/huang47/rx-event-manager)
+[![Coverage Status](https://img.shields.io/coveralls/huang47/rx-event-manager.svg)](https://coveralls.io/r/huang47/rx-event-manager?branch=master)
 
 # Rx Event Manager
 
