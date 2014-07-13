@@ -1,13 +1,12 @@
 {
   "name": "rx-event-manager",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Rx Event Manager",
   "main": "lib/EventManager.js",
   "scripts": {
     "pretest": "npm i",
     "test": "./node_modules/mocha/bin/mocha -R spec",
-    "prepublish": "npm i -g istanbul",
-    "postpublish": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "postpublish": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "keywords": [
     "rx",
@@ -20,8 +19,9 @@
   "license": "ISC",
   "devDependencies": {
     "coveralls": "^2.11.0",
-    "mocha-lcov-reporter": "0.0.1",
-    "mocha": "^1.20.1"
+    "istanbul": "^0.3.0",
+    "mocha": "^1.20.1",
+    "mocha-lcov-reporter": "0.0.1"
   },
   "dependencies": {
     "rx": "^2.2.27"
