@@ -75,6 +75,31 @@ EventManager.fire('hello', { value: 'world' })
 // nothing happened
 ```
 
+### mostRecent
+
+callback got invoked immediately with most recent value
+if given `event` got fired before.
+
+```js
+EventManager.fire('hello', 42);
+
+// 
+EventManager.mostRecent('hello', function onNext(value) {
+	console.log('callback %s', value);
+});	
+> callback 42
+
+EventManager.mostRecent('hello').
+	subscribe(function (value) {
+		console.log('observable %s', value);
+	});	
+> observable 42
+
+EventManager.fire('hello', 'world');
+> callback world
+> observable world
+```
+
 ### dispose
 
 dispose and remove given `event`
