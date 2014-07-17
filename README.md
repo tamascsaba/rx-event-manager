@@ -5,7 +5,7 @@
 
 ## motivation
 
-To allow inter-modules communication in Rx way. Also, it memorize `Rx.Disposable` instances while using `on`, `once`, and `observe` where we can simply call `dispose` without explicitly stored returned subscription from aforementioned methods.
+To allow inter-modules communication in Rx way. Also, it memorize `Rx.Disposable` instances where we can simply call `dispose` without explicitly stored returned subscription.
 
 ## API
 
@@ -83,7 +83,6 @@ if given `event` got fired before.
 ```js
 EventManager.fire('hello', 42);
 
-// 
 EventManager.latest('hello', function onNext(value) {
 	console.log('callback %s', value);
 });	
