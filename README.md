@@ -77,7 +77,7 @@ EventManager.fire('hello', { value: 'world' })
 
 ### mostRecent
 
-callback got invoked immediately with most recent value
+emit sequence immediately with most recent value
 if given `event` got fired before.
 
 ```js
@@ -98,6 +98,52 @@ EventManager.mostRecent('hello').
 EventManager.fire('hello', 'world');
 > callback world
 > observable world
+```
+
+### change
+
+emit sequences only if data changed
+
+```js
+EventManager.change('hello').
+	subscribe(function (value) {
+		console.log('hello %s', value);
+	});
+
+EventManager.fire('hello', 1);
+> 1
+
+EventManager.fire('hello', 1);
+// nothing happened
+
+EventManager.fire('hello', 2);
+> 2
+```
+
+```js
+function comparer(x, y) {
+	return x.value === y.value;
+}
+
+EventManager.change('hello', comparer).
+	subscribe(function (data) {
+		console.log('observable %s', data.value);
+	});
+	
+EventManager.change('hello', comparer, function (data) {
+	console.log('callback %s', data.value);
+});
+
+EventManager.fire('hello', { value: 1 });
+> observable 1
+> callback 1
+
+EventManager.fire('hello', { value: 1 });
+// nothing happened
+
+EventManager.fire('hello', { value: 2 });
+> observable 2
+> callback 2
 ```
 
 ### dispose

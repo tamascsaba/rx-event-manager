@@ -1,12 +1,12 @@
 {
   "name": "rx-event-manager",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Rx Event Manager",
   "main": "lib/EventManager.js",
   "scripts": {
     "pretest": "npm i",
     "test": "./node_modules/mocha/bin/mocha -R spec",
-    "postpublish": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "postpublish": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "keywords": [
     "rx",
