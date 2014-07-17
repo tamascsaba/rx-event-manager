@@ -131,25 +131,25 @@ describe('EventManager', function() {
         });
     });
 
-    describe('mostRecent', function () {
+    describe('latest', function () {
 
         it('should throw error if given event is not a valid string', function() {
             ['', 0, undefined, null, false, {}, []].forEach(function (invalidInput) {
-                A.throws(function () { EM.mostRecent(invalidInput); });
+                A.throws(function () { EM.latest(invalidInput); });
             });
         });
 
         it('should return an Rx.Observable instance without given onNext/onError/onCompleted', function() {
-            A.ok(EM.mostRecent(HELLO_WORLD) instanceof Rx.Observable);
+            A.ok(EM.latest(HELLO_WORLD) instanceof Rx.Observable);
         });
 
         it('should return an Rx.Observable instance without given onNext/onError/onCompleted', function() {
-            A.ok(EM.mostRecent(HELLO_WORLD) instanceof Rx.Observable);
+            A.ok(EM.latest(HELLO_WORLD) instanceof Rx.Observable);
         });
 
         it('should return an Rx.Observer instance with given onNext', function() {
 
-            var subscription = EM.mostRecent(HELLO_WORLD, function () {});
+            var subscription = EM.latest(HELLO_WORLD, function () {});
 
             A.ok(subscription instanceof Rx.Observer);
             A.strictEqual(typeof subscription.dispose, 'function', 'subscription.dispose should be a function');
@@ -161,7 +161,7 @@ describe('EventManager', function() {
 
             EM.fire(HELLO_WORLD, expect);
 
-            EM.mostRecent(HELLO_WORLD, function (value) {
+            EM.latest(HELLO_WORLD, function (value) {
                 A.strictEqual(value, expect, 'should be invoked immediate with value ' + expect);
                 done();
             });
@@ -176,7 +176,7 @@ describe('EventManager', function() {
 
             expect = count - 1;
 
-            EM.mostRecent(HELLO_WORLD, function (value) {
+            EM.latest(HELLO_WORLD, function (value) {
                 A.strictEqual(value, expect, 'should be invoked immediate with value ' + expect);
                 done();
             });
@@ -189,7 +189,7 @@ describe('EventManager', function() {
 
             EM.dispose(HELLO_WORLD);
 
-            EM.mostRecent(HELLO_WORLD, function (value) {
+            EM.latest(HELLO_WORLD, function (value) {
                 A.strictEqual(value, expect);
                 done();
             });
@@ -269,7 +269,7 @@ describe('EventManager', function() {
 
     describe('use-case', function () {
 
-        it('should emit sequences only for mostRecent subscriptions while using observe/on and mostRecent', function (done) {
+        it('should emit sequences only for latest subscriptions while using observe/on and latest', function (done) {
             var expect = 42;
 
             EM.fire(HELLO_WORLD, expect);
@@ -283,7 +283,7 @@ describe('EventManager', function() {
                 A.fail('on should be never invoked');
             });
 
-            EM.mostRecent(HELLO_WORLD, function (value) {
+            EM.latest(HELLO_WORLD, function (value) {
                 A.strictEqual(value, expect);
                 done();
             });

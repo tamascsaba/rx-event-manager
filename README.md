@@ -75,7 +75,7 @@ EventManager.fire('hello', { value: 'world' })
 // nothing happened
 ```
 
-### mostRecent
+### latest
 
 emit sequence immediately with most recent value
 if given `event` got fired before.
@@ -84,12 +84,12 @@ if given `event` got fired before.
 EventManager.fire('hello', 42);
 
 // 
-EventManager.mostRecent('hello', function onNext(value) {
+EventManager.latest('hello', function onNext(value) {
 	console.log('callback %s', value);
 });	
 > callback 42
 
-EventManager.mostRecent('hello').
+EventManager.latest('hello').
 	subscribe(function (value) {
 		console.log('observable %s', value);
 	});	
