@@ -5,7 +5,6 @@ var Rx = require('rx');
 var EM = require('../lib/EventManager');
 var HELLO = 'event.hello';
 var WORLD = 'event.world';
-var HELLO_WORLD = 'event.hello.world';
 
 describe('EventManager', function() {
 
@@ -19,17 +18,17 @@ describe('EventManager', function() {
         });
 
         it('should return an Rx.Observable instance', function() {
-            A.ok(EM.observe(HELLO_WORLD) instanceof Rx.Observable);
+            A.ok(EM.observe(HELLO) instanceof Rx.Observable);
         });
 
         it('should execute callback when event got fired', function(done) {
             var max = 10,
                 count = 0;
 
-            EM.observe(HELLO_WORLD).take(max).subscribe(
+            EM.observe(HELLO).take(max).subscribe(
                 function (data) {
                     count++;
-                    A.strictEqual(WORLD, data.hello);
+                    A.strictEqual('world', data.hello);
                 },
                 function (ex) {},
                 function () {
@@ -39,21 +38,21 @@ describe('EventManager', function() {
             );
 
             for (var i = 0; i < max; i++) {
-                EM.fire(HELLO_WORLD, { hello: WORLD });
+                EM.fire(HELLO, { hello: 'world' });
             }
         });
 
         // for some reason onError / onCompleted logic never got executed
         it('should never throw exceptions', function (done) {
 
-            EM.observe(HELLO_WORLD).
+            EM.observe(HELLO).
                 subscribe(
                     function () { throw new Error("..."); },
                     function () { },
                     function () { }
                 );
 
-            EM.fire(HELLO_WORLD);
+            EM.fire(HELLO);
 
             done();
         });
@@ -73,11 +72,11 @@ describe('EventManager', function() {
 
         it('should fire event with given context', function(done) {
 
-            EM.on(HELLO_WORLD, function (data) {
-                A.strictEqual(WORLD, data.hello, 'data.hello should be `world`');
+            EM.on(HELLO, function (data) {
+                A.strictEqual('world', data.hello, 'data.hello should be `world`');
             });
 
-            EM.fire(HELLO_WORLD, { hello: WORLD });
+            EM.fire(HELLO, { hello: 'world' });
 
             done();
         });
@@ -92,7 +91,7 @@ describe('EventManager', function() {
         });
 
         it('should return an Rx.Observer instance which can do dispose', function() {
-            var observer = EM.on(HELLO_WORLD);
+            var observer = EM.on(HELLO);
 
             A.ok(observer instanceof Rx.Observer);
             A.strictEqual(typeof observer.dispose, 'function', 'observer.dispose should be a function');
@@ -108,7 +107,7 @@ describe('EventManager', function() {
         });
 
         it('should return an Rx.Observer instance', function() {
-            var observer = EM.once(HELLO_WORLD);
+            var observer = EM.once(HELLO);
 
             A.ok(observer instanceof Rx.Observer);
             A.strictEqual(typeof observer.dispose, 'function', 'observer.dispose should be a function');
@@ -117,7 +116,7 @@ describe('EventManager', function() {
         it('should execute callback only once', function(done) {
             var count = 0;
 
-            EM.once(HELLO_WORLD,
+            EM.once(HELLO,
                 function (data) { count++; },
                 function (ex) { },
                 function () {
@@ -126,8 +125,7 @@ describe('EventManager', function() {
                 }
             );
 
-            // fire 10 `hello.world` events
-            for (var i = 0; i < 10; i++) { EM.fire(HELLO_WORLD); }
+            for (var i = 0; i < 10; i++) { EM.fire(HELLO); }
         });
     });
 
@@ -140,16 +138,16 @@ describe('EventManager', function() {
         });
 
         it('should return an Rx.Observable instance without given onNext/onError/onCompleted', function() {
-            A.ok(EM.latest(HELLO_WORLD) instanceof Rx.Observable);
+            A.ok(EM.latest(HELLO) instanceof Rx.Observable);
         });
 
         it('should return an Rx.Observable instance without given onNext/onError/onCompleted', function() {
-            A.ok(EM.latest(HELLO_WORLD) instanceof Rx.Observable);
+            A.ok(EM.latest(HELLO) instanceof Rx.Observable);
         });
 
         it('should return an Rx.Observer instance with given onNext', function() {
 
-            var subscription = EM.latest(HELLO_WORLD, function () {});
+            var subscription = EM.latest(HELLO, function () {});
 
             A.ok(subscription instanceof Rx.Observer);
             A.strictEqual(typeof subscription.dispose, 'function', 'subscription.dispose should be a function');
@@ -159,9 +157,9 @@ describe('EventManager', function() {
             var count = 0,
                 expect = 42;
 
-            EM.fire(HELLO_WORLD, expect);
+            EM.fire(HELLO, expect);
 
-            EM.latest(HELLO_WORLD, function (value) {
+            EM.latest(HELLO, function (value) {
                 A.strictEqual(value, expect, 'should be invoked immediate with value ' + expect);
                 done();
             });
@@ -171,12 +169,12 @@ describe('EventManager', function() {
             var count = 0;
 
             for (; count < 100; count++) {
-                EM.fire(HELLO_WORLD, count);
+                EM.fire(HELLO, count);
             }
 
             expect = count - 1;
 
-            EM.latest(HELLO_WORLD, function (value) {
+            EM.latest(HELLO, function (value) {
                 A.strictEqual(value, expect, 'should be invoked immediate with value ' + expect);
                 done();
             });
@@ -185,16 +183,16 @@ describe('EventManager', function() {
         it('should not replay if it is already disposed', function (done) {
             var expect = 42;
             
-            EM.fire(HELLO_WORLD, 'whatever');
+            EM.fire(HELLO, 'whatever');
 
-            EM.dispose(HELLO_WORLD);
+            EM.dispose(HELLO);
 
-            EM.latest(HELLO_WORLD, function (value) {
+            EM.latest(HELLO, function (value) {
                 A.strictEqual(value, expect);
                 done();
             });
 
-            EM.fire(HELLO_WORLD, expect);
+            EM.fire(HELLO, expect);
         });
     });
 
@@ -207,22 +205,22 @@ describe('EventManager', function() {
         });
 
         it('should throw error if given event is not a function', function() {
-            A.throws(function () { EM.change(HELLO_WORLD, {}); });
-            A.throws(function () { EM.change(HELLO_WORLD, []); });
+            A.throws(function () { EM.change(HELLO, {}); });
+            A.throws(function () { EM.change(HELLO, []); });
         });
 
         it('should return an Rx.Observable instance without given onNext/onError/onCompleted', function() {
-            A.ok(EM.change(HELLO_WORLD) instanceof Rx.Observable);
-            A.ok(EM.change(HELLO_WORLD, function (x, y) { return x === y; }) instanceof Rx.Observable);
+            A.ok(EM.change(HELLO) instanceof Rx.Observable);
+            A.ok(EM.change(HELLO, function (x, y) { return x === y; }) instanceof Rx.Observable);
         });
 
         it('should return an Rx.Observable instance without given onNext/onError/onCompleted', function() {
-            A.ok(EM.change(HELLO_WORLD) instanceof Rx.Observable);
+            A.ok(EM.change(HELLO) instanceof Rx.Observable);
         });
 
         it('should return an Rx.Observer instance with given onNext', function() {
 
-            var subscription = EM.change(HELLO_WORLD, function (x, y) { return x === y;}, function () {});
+            var subscription = EM.change(HELLO, function (x, y) { return x === y;}, function () {});
 
             A.ok(subscription instanceof Rx.Observer);
             A.strictEqual(typeof subscription.dispose, 'function', 'subscription.dispose should be a function');
@@ -232,18 +230,18 @@ describe('EventManager', function() {
             var expect = 42,
                 count = 0;
 
-            EM.change(HELLO_WORLD).
+            EM.change(HELLO).
                 subscribe(function (value) {
                     A.strictEqual(value, expect);
                     A.strictEqual(0, count);
                 });
 
-            EM.fire(HELLO_WORLD, expect);
+            EM.fire(HELLO, expect);
 
             count += 1;
 
             // should not trigger subscribe
-            EM.fire(HELLO_WORLD, expect);
+            EM.fire(HELLO, expect);
         });
 
         it('should be capable of customizing comparer', function () {
@@ -252,18 +250,18 @@ describe('EventManager', function() {
                 
             function comparer(x, y) { return x.value === y.value; }
 
-            EM.change(HELLO_WORLD, comparer).
+            EM.change(HELLO, comparer).
                 subscribe(function (data) {
                     A.strictEqual(data.value, expect);
                     A.strictEqual(0, count);
                 });
 
-            EM.fire(HELLO_WORLD, { value: expect });
+            EM.fire(HELLO, { value: expect });
 
             count += 1;
 
             // should not trigger subscribe
-            EM.fire(HELLO_WORLD, { value: expect });
+            EM.fire(HELLO, { value: expect });
         });
     });
 
@@ -272,18 +270,18 @@ describe('EventManager', function() {
         it('should emit sequences only for latest subscriptions while using observe/on and latest', function (done) {
             var expect = 42;
 
-            EM.fire(HELLO_WORLD, expect);
+            EM.fire(HELLO, expect);
 
-            EM.observe(HELLO_WORLD).
+            EM.observe(HELLO).
                 subscribe(function () {
                     A.fail('observe should be never invoked');
                 });
 
-            EM.on(HELLO_WORLD, function () {
+            EM.on(HELLO, function () {
                 A.fail('on should be never invoked');
             });
 
-            EM.latest(HELLO_WORLD, function (value) {
+            EM.latest(HELLO, function (value) {
                 A.strictEqual(value, expect);
                 done();
             });
@@ -411,8 +409,7 @@ describe('EventManager', function() {
     });
 
     afterEach(function () {
-        [HELLO, WORLD, HELLO_WORLD].forEach(function (event) {
-            EM.dispose(event);
-        });
+        EM.dispose(HELLO);
+        EM.dispose(WORLD);
     });
 });
