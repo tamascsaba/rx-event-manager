@@ -1,5 +1,7 @@
 [![Build Status](https://secure.travis-ci.org/huang47/rx-event-manager.png?branch=master)](http://travis-ci.org/huang47/rx-event-manager)
 [![Coverage Status](https://img.shields.io/coveralls/huang47/rx-event-manager.svg)](https://coveralls.io/r/huang47/rx-event-manager?branch=master)
+[![NPM version](http://img.shields.io/npm/v/rx-event-manager.svg)](http://img.shields.io/npm/v/rx-event-manager.svg)
+[![Downloads](http://img.shields.io/npm/dm/rx-event-manager.svg)](https://npmjs.org/package/rx-event-manager)
 
 # Rx Event Manager
 
