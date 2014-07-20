@@ -41,21 +41,6 @@ describe('EventManager', function() {
                 EM.fire(HELLO, { hello: 'world' });
             }
         });
-
-        // for some reason onError / onCompleted logic never got executed
-        it('should never throw exceptions', function (done) {
-
-            EM.observe(HELLO).
-                subscribe(
-                    function () { throw new Error("..."); },
-                    function () { },
-                    function () { }
-                );
-
-            EM.fire(HELLO);
-
-            done();
-        });
     });
 
     describe('fire', function() {

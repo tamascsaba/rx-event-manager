@@ -1,6 +1,6 @@
 {
   "name": "rx-event-manager",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Rx Event Manager",
   "main": "lib/EventManager.js",
   "scripts": {
