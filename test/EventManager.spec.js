@@ -393,8 +393,68 @@ describe('EventManager', function() {
         });
     });
 
+    describe('disposeAll', function () {
+
+        it('should dispose all subscriptions', function () {
+            var count = 0;
+
+            EM.on(HELLO, function (value) {
+                A.strictEqual(value, 3);
+            });
+
+            EM.observe(HELLO).
+                subscribe(function (value) {
+                    A.strictEqual(value, 3);
+                });
+
+            EM.fire(HELLO, 3);
+
+            EM.on(WORLD, function (value) {
+                A.strictEqual(value, 4);
+            });
+
+            EM.observe(WORLD).
+                subscribe(function (value) {
+                    A.strictEqual(value, 4);
+                });
+
+            EM.fire(WORLD, 4);
+
+            EM.disposeAll();
+
+            // all subscriptions should be disposed
+            EM.fire(HELLO, undefined);
+            EM.fire(WORLD, undefined);
+        });
+
+        it('should dispose all subscriptions', function () {
+
+            var events = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+            events.forEach(function (event) {
+
+                EM.on(event, function (value) {
+                    A.strictEqual(value, 0);
+                });
+
+                EM.observe(event, function (value) {
+                    A.strictEqual(value, 0);
+                });
+            });
+
+            events.forEach(function (event) {
+                EM.fire(event, 0);
+            });
+
+            EM.disposeAll();
+
+            events.forEach(function (event) {
+                EM.fire(event, undefined);
+            });
+        });
+    });
+
     afterEach(function () {
-        EM.dispose(HELLO);
-        EM.dispose(WORLD);
+        EM.disposeAll();
     });
 });
