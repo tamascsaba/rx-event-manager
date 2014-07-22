@@ -218,3 +218,21 @@ EventManager.dispose('hello');
 EventManager.fire('hello', { value: 'world' })
 // nothing happened
 ```
+
+### disposeAll
+
+dispose and remove all event subscriptions
+
+```js
+EventManager.on('hello', function (data) {
+	console.log(data.value);
+});
+	
+EventManager.fire('hello', { value: 'hello' });
+> hello
+
+EventManager.disposeAll();
+
+EventManager.fire('hello', { value: 'world' })
+// nothing happened
+```
