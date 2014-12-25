@@ -1,6 +1,6 @@
 {
   "name": "rx-event-manager",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Rx Event Manager",
   "main": "lib/EventManager.js",
   "scripts": {
@@ -23,7 +23,7 @@
     "mocha-lcov-reporter": "0.0.1"
   },
   "dependencies": {
-    "rx": "^2.2.27"
+    "rx": "^2.2.28"
   },
   "directories": {
     "test": "test"
