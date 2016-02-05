@@ -1,11 +1,18 @@
 {
   "name": "rx-event-manager",
-  "version": "0.5.3",
+  "version": "1.0.0",
   "description": "Rx Event Manager",
   "main": "lib/EventManager.js",
+  "typings": "lib/EventManager.d.ts",
+  "typescript": {
+    "main": "src/EventManager.ts",
+    "definition": "lib/EventManager.d.ts"
+  },
   "scripts": {
-    "pretest": "npm i",
-    "test": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- -R spec"
+    "build": "tsc",
+    "pretest": "npm i && typings install",
+    "test": "tsc && istanbul cover _mocha -- -u exports -R dot ",
+    "test:watch": "nodemon --exec 'npm run test'"
   },
   "keywords": [
     "rx",
@@ -17,13 +24,16 @@
   "author": "huang47",
   "license": "ISC",
   "devDependencies": {
-    "coveralls": "^2.11.0",
-    "istanbul": "^0.3.0",
-    "mocha": "^1.20.1",
-    "mocha-lcov-reporter": "0.0.1"
+    "coveralls": "^2.11.6",
+    "istanbul": "^0.4.2",
+    "nodemon": "^1.8.1",
+    "mocha": "^2.4.5",
+    "mocha-lcov-reporter": "1.0.0",
+    "typescript": "^1.7.5",
+    "typings": "^0.6.2"
   },
   "dependencies": {
-    "rx": "^2.2.28"
+    "rxjs": "5.0.0-beta.0"
   },
   "directories": {
     "test": "test"

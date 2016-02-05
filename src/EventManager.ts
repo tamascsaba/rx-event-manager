@@ -1,11 +1,17 @@
-var Subscriber_1 = require('rxjs/Subscriber');
-var Subject_1 = require('rxjs/Subject');
-require('rxjs/add/operator/filter');
-require('rxjs/add/operator/map');
-require('rxjs/add/operator/take');
-require('rxjs/add/operator/distinctUntilChanged');
-require('rxjs/add/operator/distinctUntilKeyChanged');
-var eventManagerCore = new Subject_1.Subject();
+import {Subscription} from 'rxjs/Subscription';
+import {Observable} from 'rxjs/Observable';
+import {Observer} from 'rxjs/Observer';
+import {Subscriber} from 'rxjs/Subscriber';
+import {Subject} from 'rxjs/Subject';
+
+import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/take';
+import 'rxjs/add/operator/distinctUntilChanged';
+import 'rxjs/add/operator/distinctUntilKeyChanged';
+
+const eventManagerCore = new Subject();
+
 /**
  * A hash of { eventName: eventObservable }
  *
@@ -13,7 +19,8 @@ var eventManagerCore = new Subject_1.Subject();
  * @property observables
  * @type {Object}
  */
-var observables = {};
+const observables: { [x: string]: Observable<any> } = {};
+
 /**
  * A hash of { eventName: [eventSubscription1, eventSubscription2, ...] }
  *
@@ -21,7 +28,8 @@ var observables = {};
  * @property subscriptions
  * @type {Object}
  */
-var subscriptions = {};
+const subscriptions: { [x: string]: Array<Subscription<any>> } = {};
+
 /**
  * An object which manages the most recent data of events.
  *
@@ -29,7 +37,8 @@ var subscriptions = {};
  * @property latestEventData
  * @type {Object}
  */
-var latestEventData = {};
+const latestEventData = {};
+
 /**
  * check if given `value` is a non-empty string
  *
@@ -38,9 +47,10 @@ var latestEventData = {};
  * @param {Object} value
  * @return {Boolean}
  */
-function _isInvalidString(value) {
+function _isInvalidString(value: string): boolean {
     return ('string' !== typeof value) || (0 === value.length);
 }
+
 /**
  * check if given `value` is NOT an instance of function
  *
@@ -49,15 +59,17 @@ function _isInvalidString(value) {
  * @param {Object} value
  * @return {Boolean}
  */
-function _isNotFunction(value) {
+function _isNotFunction(value: Function): boolean {
     return 'function' !== typeof value;
 }
+
 /**
  * @private
  * @method _keySelector
  * @param {Object} data
  */
-function _keySelector(data) { return data; }
+function _keySelector<T>(data: T): T { return data; }
+
 /**
  * compare any 2 given objects and return their equality by ===.
  *
@@ -67,7 +79,8 @@ function _keySelector(data) { return data; }
  * @param {Object} y anything
  * @return {Boolean}
  */
-function _defaultComparer(x, y) { return x === y; }
+function _defaultComparer(x: any, y: any): boolean { return x === y; }
+
 /**
  * A helper to memorize event and correspoinding subscription.
  *
@@ -77,22 +90,22 @@ function _defaultComparer(x, y) { return x === y; }
  * @param {Subscription} subscription
  * @return {Subscription}
  */
-function _registerSubscription(event, subscription) {
+function _registerSubscription(event: string, subscription: any): Subscription<any> {
     if (Array.isArray(subscriptions[event])) {
         subscriptions[event].push(subscription);
-    }
-    else {
+    } else {
         subscriptions[event] = [subscription];
     }
+
     return subscription;
 }
+
 /**
  *
  * @class EventManager
  */
-var EventManager = (function () {
-    function EventManager() {
-    }
+export default class EventManager<T> {
+
     /**
      * observe with given `event`.
      * Note: It's caller's duty to dispose returned subscription.
@@ -110,26 +123,31 @@ var EventManager = (function () {
      *
      * @throws TypeError if given `event` is not a valid string
      */
-    EventManager.prototype.observe = function (event) {
+    observe(event): Observable<T> {
         if (_isInvalidString(event)) {
             throw new TypeError('given event is not a valid string');
         }
+
         if (!observables[event]) {
             observables[event] = eventManagerCore
-                .filter(function (e) { return event === e.event; })
-                .map(function (e) { return e.data; });
+                .filter((e: any) => event === e.event)
+                .map((e: any) => e.data);
         }
-        var observable = observables[event];
-        var originalSubscribe = observable.subscribe;
-        observable.subscribe = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            return _registerSubscription(event, originalSubscribe.call.apply(originalSubscribe, [observable].concat(args)));
+
+        const observable = observables[event];
+        const originalSubscribe = observable.subscribe;
+
+
+        observable.subscribe = (...args) => {
+            return _registerSubscription(
+                event,
+                originalSubscribe.call(observable, ...args)
+            );
         };
+
         return observable;
-    };
+    }
+
     /**
      * subscribe to given `event`.
      *
@@ -154,35 +172,67 @@ var EventManager = (function () {
      * EventManager.fire('world', { answer: 42 })
      * > 42
      */
-    EventManager.prototype.on = function (event, next, error, complete) {
-        return _registerSubscription(event, this.observe(event).subscribe(next, error, complete));
-    };
+    on(
+        event: string,
+        next?: Observer<T> | ((value: T) => void),
+        error?: (error: T) => void,
+        complete?: () => void
+    ): Subscription<T> {
+        return _registerSubscription(
+            event,
+            this.observe(event).subscribe(next, error, complete)
+        );
+    }
+
     /**
      * execute callback only once and dispose it self.
      * @see on
      */
-    EventManager.prototype.once = function (event, next, error, complete) {
-        return _registerSubscription(event, this.observe(event).take(1).subscribe(next, error, complete));
-    };
+    once(
+        event: string,
+        next?: Observer<T> | ((value: T) => void),
+        error?: (error: T) => void,
+        complete?: () => void
+    ): Subscription<T> {
+        return _registerSubscription(
+            event,
+            this.observe(event).take(1).subscribe(next, error, complete)
+        );
+    }
+
     /**
      * Emits latest-persisted sequence (if available)
      */
-    EventManager.prototype.latest = function (event, next, error, complete) {
-        var observable, observer, latestData, subscription;
+    latest(
+        event: string,
+        next?: ((value?: T) => void),
+        error?: (error: T) => void,
+        complete?: () => void
+    ): Subscription<T> {
+        let observable,
+            observer,
+            latestData,
+            subscription;
+
         observable = this.observe(event);
-        if (undefined === next) {
-            return observable;
-        }
-        observer = Subscriber_1.Subscriber.create(next, error, complete);
+
+        if (undefined === next) { return observable; }
+
+        observer = Subscriber.create(next, error, complete);
+
         subscription = observable.subscribe(observer);
+
         latestData = latestEventData[event];
+
         if (latestData && true === latestData.hasValue) {
             setImmediate(function () {
                 observer.next(latestData.value);
             });
         }
+
         return _registerSubscription(event, subscription);
-    };
+    }
+
     /**
      * Emits value only if it's changed (determined by `comparer`)
      *
@@ -194,24 +244,36 @@ var EventManager = (function () {
      * @param {Function} [complete]
      * @return {Subscription}
      */
-    EventManager.prototype.change = function (event, comparer, next, error, complete) {
-        var observable;
+    change(
+        event: string,
+        comparer: Function,
+        next?: Observer<T> | ((value: T) => void),
+        error?: (error: T) => void,
+        complete?: () => void
+    ) {
+
+        let observable;
+
         comparer = comparer || _defaultComparer;
+
         if (_isNotFunction(comparer)) {
             throw new TypeError('comparer should be a function');
         }
+
         observable = this.observe(event).distinctUntilChanged(_keySelector);
-        if (undefined === next) {
-            return observable;
-        }
+
+        if (undefined === next) { return observable; }
+
         return _registerSubscription(event, observable.subscribe(next, error, complete));
-    };
+    }
+
     /**
      * Same as fire method
      */
-    EventManager.prototype.trigger = function (event, data) {
+    trigger(event: string, data: T): EventManager<T> {
         return this.fire(event, data);
-    };
+    }
+
     /**
      * dispatch `event` with given `data`.
      *
@@ -226,17 +288,23 @@ var EventManager = (function () {
      * @throws TypeError if given `event` is not a valid string
      * @chainable
      */
-    EventManager.prototype.fire = function (event, data) {
+    fire(event: string, data: T): EventManager<T> {
+
         if (_isInvalidString(event)) {
             throw new TypeError('given event is not a valid string');
         }
-        if (!latestEventData[event]) {
+
+        if ( ! latestEventData[event]) {
             latestEventData[event] = { hasValue: true };
         }
+
         latestEventData[event].value = data;
+
         eventManagerCore.next({ event: event, data: data });
+
         return this;
-    };
+    }
+
     /**
      * @usage
      *
@@ -255,30 +323,33 @@ var EventManager = (function () {
      * @method off
      * @param {String} event event name.
      */
-    EventManager.prototype.off = function (event) {
+    off(event: string): EventManager<T> {
         if (Array.isArray(subscriptions[event])) {
-            subscriptions[event].forEach(function (s) { return s.unsubscribe(); });
+            subscriptions[event].forEach((s) => s.unsubscribe());
+
             delete subscriptions[event];
         }
+
         if (latestEventData[event]) {
             delete latestEventData[event];
         }
+
         return this;
-    };
+    }
+
     /**
      * off all subscriptions
      *
      * @method offAll
      * @chainable
      */
-    EventManager.prototype.offAll = function () {
-        var _this = this;
-        Object.keys(subscriptions).forEach(function (event) { return _this.off(event); });
+    offAll(): EventManager<T> {
+
+        Object.keys(subscriptions).forEach((event) => this.off(event));
+
         return this;
-    };
-    return EventManager;
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = EventManager;
-;
+    }
+};
+
+
 module.exports = EventManager;

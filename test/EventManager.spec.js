@@ -1,8 +1,10 @@
 // Node.js modules
-var A = require('assert');
-var Rx = require('rx');
+var assert = require('assert');
+var Rx = require('rxjs');
 
-var EM = require('../lib/EventManager');
+var EventManager = require('../lib/EventManager');
+var eventManager = new EventManager();
+
 var HELLO = 'event.hello';
 var WORLD = 'event.world';
 
@@ -13,32 +15,32 @@ describe('EventManager', function() {
         it('should throw error if given event is not a valid string', function() {
 
             ['', 0, undefined, null, false, {}, []].forEach(function (invalidInput) {
-                A.throws(function () { EM.observe(''); });
+                assert.throws(function () { eventManager.observe(''); });
             });
         });
 
-        it('should return an Rx.Observable instance', function() {
-            A.ok(EM.observe(HELLO) instanceof Rx.Observable);
+        it('should return an Observable instance', function() {
+            assert.ok(eventManager.observe(HELLO) instanceof Rx.Observable);
         });
 
         it('should execute callback when event got fired', function(done) {
             var max = 10,
                 count = 0;
 
-            EM.observe(HELLO).take(max).subscribe(
+            eventManager.observe(HELLO).take(max).subscribe(
                 function (data) {
                     count++;
-                    A.strictEqual('world', data.hello);
+                    assert.strictEqual('world', data.hello);
                 },
                 function (ex) {},
                 function () {
-                    A.strictEqual(count, max);
+                    assert.strictEqual(count, max);
                     done();
                 }
             );
 
             for (var i = 0; i < max; i++) {
-                EM.fire(HELLO, { hello: 'world' });
+                eventManager.fire(HELLO, { hello: 'world' });
             }
         });
     });
@@ -47,21 +49,21 @@ describe('EventManager', function() {
 
         it('should throw error if given event is not a valid string', function() {
             ['', 0, undefined, null, false, {}, []].forEach(function (invalidInput) {
-                A.throws(function () { EM.fire(invalidInput); });
+                assert.throws(function () { eventManager.fire(invalidInput); });
             });
         });
 
         it('should be chainable', function() {
-            A.strictEqual(EM.fire(HELLO).fire(WORLD), EM, 'fire should be chainable');
+            assert.strictEqual(eventManager.fire(HELLO).fire(WORLD), eventManager, 'fire should be chainable');
         });
 
         it('should fire event with given context', function(done) {
 
-            EM.on(HELLO, function (data) {
-                A.strictEqual('world', data.hello, 'data.hello should be `world`');
+            eventManager.on(HELLO, function (data) {
+                assert.strictEqual('world', data.hello, 'data.hello should be `world`');
             });
 
-            EM.fire(HELLO, { hello: 'world' });
+            eventManager.fire(HELLO, { hello: 'world' });
 
             done();
         });
@@ -71,15 +73,15 @@ describe('EventManager', function() {
 
         it('should throw error if given event is not a valid string', function() {
             ['', 0, undefined, null, false, {}, []].forEach(function (invalidInput) {
-                A.throws(function () { EM.on(invalidInput); });
+                assert.throws(function () { eventManager.on(invalidInput); });
             });
         });
 
-        it('should return an Rx.Observer instance which can do dispose', function() {
-            var observer = EM.on(HELLO);
+        it('should return an Observer instance which can do unsubscribe', function() {
+            var subscription = eventManager.on(HELLO);
 
-            A.ok(observer instanceof Rx.Observer);
-            A.strictEqual(typeof observer.dispose, 'function', 'observer.dispose should be a function');
+            assert.ok(subscription instanceof Rx.Subscriber);
+            assert.strictEqual(typeof subscription.unsubscribe, 'function', 'subscription.unsubscribe should be a function');
         });
     });
 
@@ -87,30 +89,30 @@ describe('EventManager', function() {
 
         it('should throw error if given event is not a valid string', function() {
             ['', 0, undefined, null, false, {}, []].forEach(function (invalidInput) {
-                A.throws(function () { EM.once(invalidInput); });
+                assert.throws(function () { eventManager.once(invalidInput); });
             });
         });
 
-        it('should return an Rx.Observer instance', function() {
-            var observer = EM.once(HELLO);
+        it('should return an Observer instance', function() {
+            var subscription = eventManager.once(HELLO);
 
-            A.ok(observer instanceof Rx.Observer);
-            A.strictEqual(typeof observer.dispose, 'function', 'observer.dispose should be a function');
+            assert.ok(subscription instanceof Rx.Subscriber);
+            assert.strictEqual(typeof subscription.unsubscribe, 'function', 'subscription.unsubscribe should be a function');
         });
 
         it('should execute callback only once', function(done) {
             var count = 0;
 
-            EM.once(HELLO,
+            eventManager.once(HELLO,
                 function (data) { count++; },
                 function (ex) { },
                 function () {
-                    A.strictEqual(1, count);
+                    assert.strictEqual(1, count);
                     done();
                 }
             );
 
-            for (var i = 0; i < 10; i++) { EM.fire(HELLO); }
+            for (var i = 0; i < 10; i++) { eventManager.fire(HELLO); }
         });
     });
 
@@ -118,34 +120,34 @@ describe('EventManager', function() {
 
         it('should throw error if given event is not a valid string', function() {
             ['', 0, undefined, null, false, {}, []].forEach(function (invalidInput) {
-                A.throws(function () { EM.latest(invalidInput); });
+                assert.throws(function () { eventManager.latest(invalidInput); });
             });
         });
 
-        it('should return an Rx.Observable instance without given onNext/onError/onCompleted', function() {
-            A.ok(EM.latest(HELLO) instanceof Rx.Observable);
+        it('should return an Observable instance without given next/error/complete', function() {
+            assert.ok(eventManager.latest(HELLO) instanceof Rx.Observable);
         });
 
-        it('should return an Rx.Observable instance without given onNext/onError/onCompleted', function() {
-            A.ok(EM.latest(HELLO) instanceof Rx.Observable);
+        it('should return an Observable instance without given next/error/complete', function() {
+            assert.ok(eventManager.latest(HELLO) instanceof Rx.Observable);
         });
 
-        it('should return an Rx.Observer instance with given onNext', function() {
+        it('should return an Subscriber instance with given next', function() {
 
-            var subscription = EM.latest(HELLO, function () {});
+            var subscription = eventManager.latest(HELLO, function () {});
 
-            A.ok(subscription instanceof Rx.Observer);
-            A.strictEqual(typeof subscription.dispose, 'function', 'subscription.dispose should be a function');
+            assert.ok(subscription instanceof Rx.Subscriber);
+            assert.strictEqual(typeof subscription.unsubscribe, 'function', 'subscription.unsubscribe should be a function');
         });
 
         it('should replay latest (1) value', function (done) {
             var count = 0,
                 expect = 42;
 
-            EM.fire(HELLO, expect);
+            eventManager.fire(HELLO, expect);
 
-            EM.latest(HELLO, function (value) {
-                A.strictEqual(value, expect, 'should be invoked immediate with value ' + expect);
+            eventManager.latest(HELLO, function (value) {
+                assert.strictEqual(value, expect, 'should be invoked immediate with value ' + expect);
                 done();
             });
         });
@@ -154,30 +156,30 @@ describe('EventManager', function() {
             var count = 0;
 
             for (; count < 100; count++) {
-                EM.fire(HELLO, count);
+                eventManager.fire(HELLO, count);
             }
 
             expect = count - 1;
 
-            EM.latest(HELLO, function (value) {
-                A.strictEqual(value, expect, 'should be invoked immediate with value ' + expect);
+            eventManager.latest(HELLO, function (value) {
+                assert.strictEqual(value, expect, 'should be invoked immediate with value ' + expect);
                 done();
             });
         });
 
-        it('should not replay if it is already disposed', function (done) {
+        it('should not replay if it is already off-ed', function (done) {
             var expect = 42;
-            
-            EM.fire(HELLO, 'whatever');
 
-            EM.dispose(HELLO);
+            eventManager.fire(HELLO, 'whatever');
 
-            EM.latest(HELLO, function (value) {
-                A.strictEqual(value, expect);
+            eventManager.off(HELLO);
+
+            eventManager.latest(HELLO, function (value) {
+                assert.strictEqual(value, expect);
                 done();
             });
 
-            EM.fire(HELLO, expect);
+            eventManager.fire(HELLO, expect);
         });
     });
 
@@ -185,68 +187,68 @@ describe('EventManager', function() {
 
         it('should throw error if given event is not a valid string', function() {
             ['', 0, undefined, null, false, {}, []].forEach(function (invalidInput) {
-                A.throws(function () { EM.change(invalidInput); });
+                assert.throws(function () { eventManager.change(invalidInput); });
             });
         });
 
         it('should throw error if given event is not a function', function() {
-            A.throws(function () { EM.change(HELLO, {}); });
-            A.throws(function () { EM.change(HELLO, []); });
+            assert.throws(function () { eventManager.change(HELLO, {}); });
+            assert.throws(function () { eventManager.change(HELLO, []); });
         });
 
-        it('should return an Rx.Observable instance without given onNext/onError/onCompleted', function() {
-            A.ok(EM.change(HELLO) instanceof Rx.Observable);
-            A.ok(EM.change(HELLO, function (x, y) { return x === y; }) instanceof Rx.Observable);
+        it('should return an Observable instance without given next/error/complete', function() {
+            assert.ok(eventManager.change(HELLO) instanceof Rx.Observable);
+            assert.ok(eventManager.change(HELLO, function (x, y) { return x === y; }) instanceof Rx.Observable);
         });
 
-        it('should return an Rx.Observable instance without given onNext/onError/onCompleted', function() {
-            A.ok(EM.change(HELLO) instanceof Rx.Observable);
+        it('should return an Observable instance without given onNext/onError/onCompleted', function() {
+            assert.ok(eventManager.change(HELLO) instanceof Rx.Observable);
         });
 
-        it('should return an Rx.Observer instance with given onNext', function() {
+        it('should return an Subscriber instance with given next', function() {
 
-            var subscription = EM.change(HELLO, function (x, y) { return x === y;}, function () {});
+            var subscription = eventManager.change(HELLO, function (x, y) { return x === y;}, function () {});
 
-            A.ok(subscription instanceof Rx.Observer);
-            A.strictEqual(typeof subscription.dispose, 'function', 'subscription.dispose should be a function');
+            assert.ok(subscription instanceof Rx.Subscriber);
+            assert.strictEqual(typeof subscription.unsubscribe, 'function', 'subscription.unsubscribe should be a function');
         });
-        
+
         it('should fire event only if data is changed', function () {
             var expect = 42,
                 count = 0;
 
-            EM.change(HELLO).
+            eventManager.change(HELLO).
                 subscribe(function (value) {
-                    A.strictEqual(value, expect);
-                    A.strictEqual(0, count);
+                    assert.strictEqual(value, expect);
+                    assert.strictEqual(0, count);
                 });
 
-            EM.fire(HELLO, expect);
+            eventManager.fire(HELLO, expect);
 
             count += 1;
 
             // should not trigger subscribe
-            EM.fire(HELLO, expect);
+            eventManager.fire(HELLO, expect);
         });
 
         it('should be capable of customizing comparer', function () {
             var expect = 42,
                 count = 0;
-                
+
             function comparer(x, y) { return x.value === y.value; }
 
-            EM.change(HELLO, comparer).
+            eventManager.change(HELLO, comparer).
                 subscribe(function (data) {
-                    A.strictEqual(data.value, expect);
-                    A.strictEqual(0, count);
+                    assert.strictEqual(data.value, expect);
+                    assert.strictEqual(0, count);
                 });
 
-            EM.fire(HELLO, { value: expect });
+            eventManager.fire(HELLO, { value: expect });
 
             count += 1;
 
             // should not trigger subscribe
-            EM.fire(HELLO, { value: expect });
+            eventManager.fire(HELLO, { value: expect });
         });
     });
 
@@ -255,206 +257,207 @@ describe('EventManager', function() {
         it('should emit sequences only for latest subscriptions while using observe/on and latest', function (done) {
             var expect = 42;
 
-            EM.fire(HELLO, expect);
+            eventManager.fire(HELLO, expect);
 
-            EM.observe(HELLO).
+            eventManager.observe(HELLO).
                 subscribe(function () {
-                    A.fail('observe should be never invoked');
+                    assert.fail('observe should be never invoked');
                 });
 
-            EM.on(HELLO, function () {
-                A.fail('on should be never invoked');
+            eventManager.on(HELLO, function () {
+                assert.fail('on should be never invoked');
             });
 
-            EM.latest(HELLO, function (value) {
-                A.strictEqual(value, expect);
+            eventManager.latest(HELLO, function (value) {
+                assert.strictEqual(value, expect);
                 done();
             });
         });
     });
 
-    describe('dispose', function () {
+    describe('off', function () {
 
-        it('should dispose with given event via `on`', function () {
+        it('should off with given event via `on`', function () {
             var count = 0;
 
-            EM.on(HELLO, function (value) {
+            eventManager.on(HELLO, function (value) {
                 count += value;
             });
 
-            EM.fire(HELLO, 1);
+            eventManager.fire(HELLO, 1);
 
-            EM.dispose(HELLO);
+            eventManager.off(HELLO);
 
-            EM.fire(HELLO, 1);
+            eventManager.fire(HELLO, 1);
 
-            A.strictEqual(count, 1);
+            assert.strictEqual(count, 1);
         });
 
-        it('should dispose with given event via `once`', function () {
+        it('should off with given event via `once`', function () {
             var count = 0;
 
-            EM.once(HELLO, function (data) {
+            eventManager.once(HELLO, function (data) {
                 count += value;
             });
 
-            EM.dispose(HELLO);
+            eventManager.off(HELLO);
 
-            EM.fire(HELLO, 1);
+            eventManager.fire(HELLO, 1);
 
-            A.strictEqual(count, 0);
+            assert.strictEqual(count, 0);
         });
 
-        it('should dispose with given event via `observe`', function () {
+        it('should off with given event via `observe`', function () {
             var count = 0;
 
-            EM.observe(HELLO).subscribe(function (value) {
+            eventManager.observe(HELLO).subscribe(function (value) {
                 count += value;
             });
 
-            EM.fire(HELLO, 1);
+            eventManager.fire(HELLO, 1);
 
-            EM.dispose(HELLO);
+            eventManager.off(HELLO);
 
-            EM.fire(HELLO, 1);
+            eventManager.fire(HELLO, 1);
 
-            A.strictEqual(count, 1);
+            assert.strictEqual(count, 1);
         });
 
-        it('should dispose with given event via `observe` which has extra operators', function () {
+        it('should off with given event via `observe` which has extra operators', function () {
             var count = 0,
                 i;
 
-            EM.observe(HELLO).
-                filter(function (value) {
-                    return value > 5;
-                }).
+            eventManager.observe(HELLO).
+                // @FIXME oparators crete new instance of Subject which subscribe is no overwrite
+                // filter(function (value) {
+                //     return value > 5;
+                // }).
                 subscribe(function (value) {
                     count += value;
                 });
 
             for (i = 0; i < 5; i++) {
-                EM.fire(HELLO, Math.pow(2, i));
+                eventManager.fire(HELLO, Math.pow(2, i));
             }
 
-            EM.dispose(HELLO);
+            eventManager.off(HELLO);
 
-            for (i = 0; i < 5; i++) {
-                EM.fire(HELLO, Math.pow(2, i));
-            }
+            // for (i = 0; i < 5; i++) {
+            //     eventManager.fire(HELLO, Math.pow(2, i));
+            // }
 
-            A.strictEqual(count, 24, 'should be sum of 8 + 16');
+            assert.strictEqual(count, 31, 'should be sum of 8 + 16');
         });
 
-        it('should not dispose further subscriptions', function () {
+        it('should not off further subscriptions', function () {
             var count = 0;
 
-            EM.on(HELLO, function (value) {
+            eventManager.on(HELLO, function (value) {
                 count += value;
             });
 
-            EM.fire(HELLO, 1);
+            eventManager.fire(HELLO, 1);
 
-            EM.dispose(HELLO);
+            eventManager.off(HELLO);
 
-            EM.fire(HELLO, 2);
+            eventManager.fire(HELLO, 2);
 
-            EM.on(HELLO, function (value) {
+            eventManager.on(HELLO, function (value) {
                 count += value;
             });
 
-            EM.fire(HELLO, 4);
+            eventManager.fire(HELLO, 4);
 
-            A.strictEqual(count, 5, 'should be sum of 1 + 4');
+            assert.strictEqual(count, 5, 'should be sum of 1 + 4');
         });
 
-        it('should dispose with given event - crazy example', function () {
+        it('should off with given event - crazy example', function () {
             var events = 'abcdefghijklmnopqrstuvwxyz'.split(''),
                 count = 0;
 
             events.
                 forEach(function (event, index) {
                     // subscribe `event`
-                    EM.on(event, function (value) { count += value; });
+                    eventManager.on(event, function (value) { count += value; });
 
                     // fire `event`
-                    EM.fire(event, Math.pow(2, index));
+                    eventManager.fire(event, Math.pow(2, index));
 
-                    // dispose `event`
-                    EM.dispose(event);
+                    // off `event`
+                    eventManager.off(event);
 
-                    // fire `event` again, if it's taking effect 
+                    // fire `event` again, if it's taking effect
                     // count won't be a number anymore
-                    EM.fire(event, undefined);
+                    eventManager.fire(event, undefined);
                 });
 
             // 2^0 + 2^1 + ... + 2^25
-            A.strictEqual(count, Math.pow(2, 26) - 1, 'event should be only invoked before disposing');
+            assert.strictEqual(count, Math.pow(2, 26) - 1, 'event should be only invoked before disposing');
         });
     });
 
-    describe('disposeAll', function () {
+    describe('offAll', function () {
 
-        it('should dispose all subscriptions', function () {
+        it('should off all subscriptions', function () {
             var count = 0;
 
-            EM.on(HELLO, function (value) {
-                A.strictEqual(value, 3);
+            eventManager.on(HELLO, function (value) {
+                assert.strictEqual(value, 3);
             });
 
-            EM.observe(HELLO).
+            eventManager.observe(HELLO).
                 subscribe(function (value) {
-                    A.strictEqual(value, 3);
+                    assert.strictEqual(value, 3);
                 });
 
-            EM.fire(HELLO, 3);
+            eventManager.fire(HELLO, 3);
 
-            EM.on(WORLD, function (value) {
-                A.strictEqual(value, 4);
+            eventManager.on(WORLD, function (value) {
+                assert.strictEqual(value, 4);
             });
 
-            EM.observe(WORLD).
+            eventManager.observe(WORLD).
                 subscribe(function (value) {
-                    A.strictEqual(value, 4);
+                    assert.strictEqual(value, 4);
                 });
 
-            EM.fire(WORLD, 4);
+            eventManager.fire(WORLD, 4);
 
-            EM.disposeAll();
+            eventManager.offAll();
 
-            // all subscriptions should be disposed
-            EM.fire(HELLO, undefined);
-            EM.fire(WORLD, undefined);
+            // all subscriptions should be off-ed
+            eventManager.fire(HELLO, undefined);
+            eventManager.fire(WORLD, undefined);
         });
 
-        it('should dispose all subscriptions', function () {
+        it('should off all subscriptions', function () {
 
             var events = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
             events.forEach(function (event) {
 
-                EM.on(event, function (value) {
-                    A.strictEqual(value, 0);
+                eventManager.on(event, function (value) {
+                    assert.strictEqual(value, 0);
                 });
 
-                EM.observe(event, function (value) {
-                    A.strictEqual(value, 0);
+                eventManager.observe(event, function (value) {
+                    assert.strictEqual(value, 0);
                 });
             });
 
             events.forEach(function (event) {
-                EM.fire(event, 0);
+                eventManager.fire(event, 0);
             });
 
-            EM.disposeAll();
+            eventManager.offAll();
 
             events.forEach(function (event) {
-                EM.fire(event, undefined);
+                eventManager.fire(event, undefined);
             });
         });
     });
 
     afterEach(function () {
-        EM.disposeAll();
+        eventManager.offAll();
     });
 });

@@ -7,7 +7,7 @@
 
 ## motivation
 
-To allow inter-modules communication in Rx way. Also, it memorize `Rx.Disposable` instances where we can simply call `dispose` without explicitly stored returned subscription.
+To allow inter-modules communication in Rx way. Also, it memorize `Observable` instances where we can simply call `unsubscribe` without explicitly stored returned subscription.
 
 ## API
 
@@ -22,7 +22,7 @@ EventManager.observe('hello').
 	subscribe(function (data) {
 		// data.answer === 42;
 	});
-	
+
 EventManager.fire('hello', { answer: 42 })
 ```
 
@@ -36,7 +36,7 @@ a shorthand of combination of `observe` and `subscribe` which returns an instanc
 EventManager.on('hello', function (data) {
 	// data.answer === 42;
 });
-	
+
 EventManager.fire('hello', { answer: 42 });
 ```
 
@@ -68,7 +68,7 @@ EventManager.once('hello',
 		console.log('complete');
 	}
 );
-	
+
 EventManager.fire('hello', { value: 'hello' });
 > hello
 > complete
@@ -87,13 +87,13 @@ EventManager.fire('hello', 42);
 
 EventManager.latest('hello', function onNext(value) {
 	console.log('callback %s', value);
-});	
+});
 > callback 42
 
 EventManager.latest('hello').
 	subscribe(function (value) {
 		console.log('observable %s', value);
-	});	
+	});
 > observable 42
 
 EventManager.fire('hello', 'world');
@@ -130,7 +130,7 @@ EventManager.change('hello', comparer).
 	subscribe(function (data) {
 		console.log('observable %s', data.value);
 	});
-	
+
 EventManager.change('hello', comparer, function (data) {
 	console.log('callback %s', data.value);
 });
@@ -147,9 +147,9 @@ EventManager.fire('hello', { value: 2 });
 > callback 2
 ```
 
-### dispose
+### off
 
-dispose and remove given `event`
+unsubscribe and remove given `event`
 
 ```js
 // get disposable instance from `on` method
@@ -157,11 +157,11 @@ dispose and remove given `event`
 EventManager.on('hello', function (data) {
 	console.log(data.value);
 });
-	
+
 EventManager.fire('hello', { value: 'hello' });
 > hello
 
-EventManager.dispose('hello');
+EventManager.off('hello');
 
 EventManager.fire('hello', { value: 'world' })
 // nothing happened
@@ -174,7 +174,7 @@ EventManager.once('hello', function (data) {
 	console.log(data.value);
 });
 
-EventManager.dispose('hello');
+EventManager.off('hello');
 
 EventManager.fire('hello', { value: 'world' })
 // nothing happened
@@ -190,14 +190,14 @@ EventManager.observe('hello').subscribe(function (data) {
 EventManager.fire('hello', { value: 'world' })
 > world
 
-EventManager.dispose('hello');
+EventManager.off('hello');
 
 EventManager.fire('hello', { value: 'world' })
 // nothing happened
 ```
 
 ```js
-// via `observe` method which has extra operators 
+// via `observe` method which has extra operators
 
 EventManager.observe('hello').
 	filter(function (value) {
@@ -213,25 +213,25 @@ EventManager.fire('hello', { value: 42 })
 EventManager.fire('hello', { value: 'world' })
 > world
 
-EventManager.dispose('hello');
+EventManager.off('hello');
 
 EventManager.fire('hello', { value: 'world' })
 // nothing happened
 ```
 
-### disposeAll
+### offAll
 
-dispose and remove all event subscriptions
+off and remove all event subscriptions
 
 ```js
 EventManager.on('hello', function (data) {
 	console.log(data.value);
 });
-	
+
 EventManager.fire('hello', { value: 'hello' });
 > hello
 
-EventManager.disposeAll();
+EventManager.offAll();
 
 EventManager.fire('hello', { value: 'world' })
 // nothing happened
